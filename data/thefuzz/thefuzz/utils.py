@@ -22,6 +22,7 @@ def check_for_equivalence(func):
         if args[0] == args[1]:
             return 100
         return func(*args, **kwargs)
+
     return decorator
 
 
@@ -31,6 +32,7 @@ def check_for_none(func):
         if args[0] is None or args[1] is None:
             return 0
         return func(*args, **kwargs)
+
     return decorator
 
 
@@ -40,6 +42,7 @@ def check_empty_string(func):
         if len(args[0]) == 0 or len(args[1]) == 0:
             return 0
         return func(*args, **kwargs)
+
     return decorator
 
 
@@ -62,10 +65,10 @@ def make_type_consistent(s1, s2):
 
 def full_process(s, force_ascii=False):
     """Process string by
-        -- removing all but letters and numbers
-        -- trim whitespace
-        -- force to lower case
-        if force_ascii == True, force convert to ascii"""
+    -- removing all but letters and numbers
+    -- trim whitespace
+    -- force to lower case
+    if force_ascii == True, force convert to ascii"""
 
     if force_ascii:
         s = ascii_only(str(s))
@@ -77,5 +80,5 @@ def full_process(s, force_ascii=False):
 
 
 def intr(n):
-    '''Returns a correctly rounded integer'''
+    """Returns a correctly rounded integer"""
     return int(round(n))

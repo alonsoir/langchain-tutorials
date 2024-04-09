@@ -10,10 +10,16 @@ from thefuzz.string_processing import StringProcessor
 
 class StringProcessingTest(unittest.TestCase):
     def test_replace_non_letters_non_numbers_with_whitespace(self):
-        strings = ["new york mets - atlanta braves", "Cães danados",
-                   "New York //// Mets $$$", "Ça va?"]
+        strings = [
+            "new york mets - atlanta braves",
+            "Cães danados",
+            "New York //// Mets $$$",
+            "Ça va?",
+        ]
         for string in strings:
-            proc_string = StringProcessor.replace_non_letters_non_numbers_with_whitespace(string)
+            proc_string = (
+                StringProcessor.replace_non_letters_non_numbers_with_whitespace(string)
+            )
             regex = re.compile(r"(?ui)[\W]")
             for expr in regex.finditer(proc_string):
                 self.assertEqual(expr.group(), " ")
@@ -42,7 +48,7 @@ class UtilsTest(unittest.TestCase):
             "Cães danados",
             "\xacCamarões assados",
             "a\xac\u1234\u20ac\U00008000",
-            "\u00C1"
+            "\u00C1",
         ]
 
     def tearDown(self):
@@ -71,14 +77,14 @@ class RatioTest(unittest.TestCase):
         self.s4 = "new york mets vs atlanta braves"
         self.s5 = "atlanta braves vs new york mets"
         self.s6 = "new york mets - atlanta braves"
-        self.s7 = 'new york city mets - atlanta braves'
+        self.s7 = "new york city mets - atlanta braves"
         # test silly corner cases
-        self.s8 = '{'
-        self.s8a = '{'
-        self.s9 = '{a'
-        self.s9a = '{a'
-        self.s10 = 'a{'
-        self.s10a = '{b'
+        self.s8 = "{"
+        self.s8a = "{"
+        self.s9 = "{a"
+        self.s9a = "{a"
+        self.s10 = "a{"
+        self.s10a = "{b"
 
         self.cirque_strings = [
             "cirque du soleil - zarkana - las vegas",
@@ -86,7 +92,7 @@ class RatioTest(unittest.TestCase):
             "cirque du soleil las vegas",
             "zarkana las vegas",
             "las vegas cirque du soleil at the bellagio",
-            "zarakana - cirque du soleil - bellagio"
+            "zarakana - cirque du soleil - bellagio",
         ]
 
         self.baseball_strings = [
@@ -106,7 +112,9 @@ class RatioTest(unittest.TestCase):
 
     def testCaseInsensitive(self):
         self.assertNotEqual(fuzz.ratio(self.s1, self.s2), 100)
-        self.assertEqual(fuzz.ratio(utils.full_process(self.s1), utils.full_process(self.s2)), 100)
+        self.assertEqual(
+            fuzz.ratio(utils.full_process(self.s1), utils.full_process(self.s2)), 100
+        )
 
     def testPartialRatio(self):
         self.assertEqual(fuzz.partial_ratio(self.s1, self.s3), 100)
@@ -117,17 +125,33 @@ class RatioTest(unittest.TestCase):
     def testPartialTokenSortRatio(self):
         self.assertEqual(fuzz.partial_token_sort_ratio(self.s1, self.s1a), 100)
         self.assertEqual(fuzz.partial_token_sort_ratio(self.s4, self.s5), 100)
-        self.assertEqual(fuzz.partial_token_sort_ratio(self.s8, self.s8a, full_process=False), 100)
-        self.assertEqual(fuzz.partial_token_sort_ratio(self.s9, self.s9a, full_process=True), 100)
-        self.assertEqual(fuzz.partial_token_sort_ratio(self.s9, self.s9a, full_process=False), 100)
-        self.assertEqual(fuzz.partial_token_sort_ratio(self.s10, self.s10a, full_process=False), 50)
+        self.assertEqual(
+            fuzz.partial_token_sort_ratio(self.s8, self.s8a, full_process=False), 100
+        )
+        self.assertEqual(
+            fuzz.partial_token_sort_ratio(self.s9, self.s9a, full_process=True), 100
+        )
+        self.assertEqual(
+            fuzz.partial_token_sort_ratio(self.s9, self.s9a, full_process=False), 100
+        )
+        self.assertEqual(
+            fuzz.partial_token_sort_ratio(self.s10, self.s10a, full_process=False), 50
+        )
 
     def testTokenSetRatio(self):
         self.assertEqual(fuzz.token_set_ratio(self.s4, self.s5), 100)
-        self.assertEqual(fuzz.token_set_ratio(self.s8, self.s8a, full_process=False), 100)
-        self.assertEqual(fuzz.token_set_ratio(self.s9, self.s9a, full_process=True), 100)
-        self.assertEqual(fuzz.token_set_ratio(self.s9, self.s9a, full_process=False), 100)
-        self.assertEqual(fuzz.token_set_ratio(self.s10, self.s10a, full_process=False), 50)
+        self.assertEqual(
+            fuzz.token_set_ratio(self.s8, self.s8a, full_process=False), 100
+        )
+        self.assertEqual(
+            fuzz.token_set_ratio(self.s9, self.s9a, full_process=True), 100
+        )
+        self.assertEqual(
+            fuzz.token_set_ratio(self.s9, self.s9a, full_process=False), 100
+        )
+        self.assertEqual(
+            fuzz.token_set_ratio(self.s10, self.s10a, full_process=False), 50
+        )
 
     def testPartialTokenSetRatio(self):
         self.assertEqual(fuzz.partial_token_set_ratio(self.s4, self.s7), 100)
@@ -269,30 +293,22 @@ class ValidatorTest(unittest.TestCase):
         self.testFunc = lambda *args, **kwargs: (args, kwargs)
 
     def testCheckForNone(self):
-        invalid_input = [
-            (None, None),
-            ('Some', None),
-            (None, 'Some')
-        ]
+        invalid_input = [(None, None), ("Some", None), (None, "Some")]
         decorated_func = utils.check_for_none(self.testFunc)
         for i in invalid_input:
             self.assertEqual(decorated_func(*i), 0)
 
-        valid_input = ('Some', 'Some')
+        valid_input = ("Some", "Some")
         actual = decorated_func(*valid_input)
         self.assertNotEqual(actual, 0)
 
     def testCheckEmptyString(self):
-        invalid_input = [
-            ('', ''),
-            ('Some', ''),
-            ('', 'Some')
-        ]
+        invalid_input = [("", ""), ("Some", ""), ("", "Some")]
         decorated_func = utils.check_empty_string(self.testFunc)
         for i in invalid_input:
             self.assertEqual(decorated_func(*i), 0)
 
-        valid_input = ('Some', 'Some')
+        valid_input = ("Some", "Some")
         actual = decorated_func(*valid_input)
         self.assertNotEqual(actual, 0)
 
@@ -314,7 +330,7 @@ class ProcessTest(unittest.TestCase):
             "cirque du soleil las vegas",
             "zarkana las vegas",
             "las vegas cirque du soleil at the bellagio",
-            "zarakana - cirque du soleil - bellagio"
+            "zarakana - cirque du soleil - bellagio",
         ]
 
         self.baseball_strings = [
@@ -350,7 +366,7 @@ class ProcessTest(unittest.TestCase):
             ["new york yankees vs boston red sox", "Fenway Park", "2011-05-11", "8pm"],
             ["atlanta braves vs pittsburgh pirates", "PNC Park", "2011-05-11", "8pm"],
         ]
-        query = ["new york mets vs chicago cubs", "CitiField", "2017-03-19", "8pm"],
+        query = (["new york mets vs chicago cubs", "CitiField", "2017-03-19", "8pm"],)
 
         best = process.extractOne(query, events, processor=lambda event: event[0])
         self.assertEqual(best[0], events[0])
@@ -360,14 +376,14 @@ class ProcessTest(unittest.TestCase):
             "new york mets vs chicago cubs",
             "chicago cubs at new york mets",
             "atlanta braves vs pittsbugh pirates",
-            "new york yankees vs boston red sox"
+            "new york yankees vs boston red sox",
         ]
 
         choices_dict = {
             1: "new york mets vs chicago cubs",
             2: "chicago cubs vs chicago white sox",
             3: "philladelphia phillies vs atlanta braves",
-            4: "braves vs mets"
+            4: "braves vs mets",
         }
 
         # in this hypothetical example we care about ordering, so we use quick ratio
@@ -393,7 +409,7 @@ class ProcessTest(unittest.TestCase):
             "new york mets vs chicago cubs",
             "chicago cubs at new york mets",
             "atlanta braves vs pittsbugh pirates",
-            "new york yankees vs boston red sox"
+            "new york yankees vs boston red sox",
         ]
 
         query = "los angeles dodgers vs san francisco giants"
@@ -414,7 +430,7 @@ class ProcessTest(unittest.TestCase):
             "new york mets vs chicago cubs",
             "chicago cubs at new york mets",
             "atlanta braves vs pittsbugh pirates",
-            "new york yankees vs boston red sox"
+            "new york yankees vs boston red sox",
         ]
 
         query = "new york mets vs chicago cubs"
@@ -430,7 +446,7 @@ class ProcessTest(unittest.TestCase):
             "new york mets vs chicago cubs",
             "new york yankees vs boston red sox",
             "",
-            ""
+            "",
         ]
 
         query = "new york mets at chicago cubs"
@@ -444,7 +460,7 @@ class ProcessTest(unittest.TestCase):
             "new york mets vs chicago cubs",
             "new york yankees vs boston red sox",
             None,
-            None
+            None,
         ]
 
         query = "new york mets at chicago cubs"
@@ -454,12 +470,16 @@ class ProcessTest(unittest.TestCase):
 
     def test_list_like_extract(self):
         """We should be able to use a list-like object for choices."""
+
         def generate_choices():
-            choices = ['a', 'Bb', 'CcC']
+            choices = ["a", "Bb", "CcC"]
             yield from choices
-        search = 'aaa'
-        result = [(value, confidence) for value, confidence in
-                  process.extract(search, generate_choices())]
+
+        search = "aaa"
+        result = [
+            (value, confidence)
+            for value, confidence in process.extract(search, generate_choices())
+        ]
         self.assertGreater(len(result), 0)
 
     def test_dict_like_extract(self):
@@ -470,49 +490,59 @@ class ProcessTest(unittest.TestCase):
             from UserDict import UserDict
         except ImportError:
             from collections import UserDict
-        choices = UserDict({'aa': 'bb', 'a1': None})
-        search = 'aaa'
+        choices = UserDict({"aa": "bb", "a1": None})
+        search = "aaa"
         result = process.extract(search, choices)
         self.assertGreater(len(result), 0)
         for value, confidence, key in result:
             self.assertIn(value, choices.values())
 
     def test_dedupe(self):
-        """We should be able to use a list-like object for contains_dupes
-        """
+        """We should be able to use a list-like object for contains_dupes"""
         # Test 1
-        contains_dupes = ['Frodo Baggins', 'Tom Sawyer', 'Bilbo Baggin', 'Samuel L. Jackson', 'F. Baggins', 'Frody Baggins', 'Bilbo Baggins']
+        contains_dupes = [
+            "Frodo Baggins",
+            "Tom Sawyer",
+            "Bilbo Baggin",
+            "Samuel L. Jackson",
+            "F. Baggins",
+            "Frody Baggins",
+            "Bilbo Baggins",
+        ]
 
         result = process.dedupe(contains_dupes)
         self.assertLess(len(result), len(contains_dupes))
 
         # Test 2
-        contains_dupes = ['Tom', 'Dick', 'Harry']
+        contains_dupes = ["Tom", "Dick", "Harry"]
 
         # we should end up with the same list since no duplicates are contained in the list (e.g. original list is returned)
-        deduped_list = ['Tom', 'Dick', 'Harry']
+        deduped_list = ["Tom", "Dick", "Harry"]
 
         result = process.dedupe(contains_dupes)
         self.assertEqual(result, deduped_list)
 
     def test_simplematch(self):
-        basic_string = 'a, b'
-        match_strings = ['a, b']
+        basic_string = "a, b"
+        match_strings = ["a, b"]
 
         result = process.extractOne(basic_string, match_strings, scorer=fuzz.ratio)
-        part_result = process.extractOne(basic_string, match_strings, scorer=fuzz.partial_ratio)
+        part_result = process.extractOne(
+            basic_string, match_strings, scorer=fuzz.partial_ratio
+        )
 
-        self.assertEqual(result, ('a, b', 100))
-        self.assertEqual(part_result, ('a, b', 100))
+        self.assertEqual(result, ("a, b", 100))
+        self.assertEqual(part_result, ("a, b", 100))
 
 
 class TestCodeFormat(unittest.TestCase):
     def test_pep8_conformance(self):
         pep8style = pycodestyle.StyleGuide(quiet=False)
-        pep8style.options.ignore = pep8style.options.ignore + tuple(['E501'])
-        pep8style.input_dir('thefuzz')
+        pep8style.options.ignore = pep8style.options.ignore + tuple(["E501"])
+        pep8style.input_dir("thefuzz")
         result = pep8style.check_files()
         self.assertEqual(result.total_errors, 0, "PEP8 POLICE - WOOOOOWOOOOOOOOOO")
 
-if __name__ == '__main__':
-    unittest.main()         # run all tests
+
+if __name__ == "__main__":
+    unittest.main()  # run all tests

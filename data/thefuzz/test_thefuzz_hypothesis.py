@@ -18,21 +18,30 @@ def scorers_processors():
 
     :return: [(scorer, processor), ...]
     """
-    scorers = [fuzz.ratio,
-               fuzz.partial_ratio]
-    processors = [lambda x: x,
-                  partial(utils.full_process, force_ascii=False),
-                  partial(utils.full_process, force_ascii=True)]
+    scorers = [fuzz.ratio, fuzz.partial_ratio]
+    processors = [
+        lambda x: x,
+        partial(utils.full_process, force_ascii=False),
+        partial(utils.full_process, force_ascii=True),
+    ]
     splist = list(product(scorers, processors))
     splist.extend(
-        [(fuzz.WRatio, partial(utils.full_process, force_ascii=True)),
-         (fuzz.QRatio, partial(utils.full_process, force_ascii=True)),
-         (fuzz.UWRatio, partial(utils.full_process, force_ascii=False)),
-         (fuzz.UQRatio, partial(utils.full_process, force_ascii=False)),
-         (fuzz.token_set_ratio, partial(utils.full_process, force_ascii=True)),
-         (fuzz.token_sort_ratio, partial(utils.full_process, force_ascii=True)),
-         (fuzz.partial_token_set_ratio, partial(utils.full_process, force_ascii=True)),
-         (fuzz.partial_token_sort_ratio, partial(utils.full_process, force_ascii=True))]
+        [
+            (fuzz.WRatio, partial(utils.full_process, force_ascii=True)),
+            (fuzz.QRatio, partial(utils.full_process, force_ascii=True)),
+            (fuzz.UWRatio, partial(utils.full_process, force_ascii=False)),
+            (fuzz.UQRatio, partial(utils.full_process, force_ascii=False)),
+            (fuzz.token_set_ratio, partial(utils.full_process, force_ascii=True)),
+            (fuzz.token_sort_ratio, partial(utils.full_process, force_ascii=True)),
+            (
+                fuzz.partial_token_set_ratio,
+                partial(utils.full_process, force_ascii=True),
+            ),
+            (
+                fuzz.partial_token_sort_ratio,
+                partial(utils.full_process, force_ascii=True),
+            ),
+        ]
     )
 
     return splist
@@ -45,22 +54,25 @@ def full_scorers_processors():
     :return: [(scorer, processor), ...]
     """
     scorers = [fuzz.ratio]
-    processors = [lambda x: x,
-                  partial(utils.full_process, force_ascii=False),
-                  partial(utils.full_process, force_ascii=True)]
+    processors = [
+        lambda x: x,
+        partial(utils.full_process, force_ascii=False),
+        partial(utils.full_process, force_ascii=True),
+    ]
     splist = list(product(scorers, processors))
     splist.extend(
-        [(fuzz.WRatio, partial(utils.full_process, force_ascii=True)),
-         (fuzz.QRatio, partial(utils.full_process, force_ascii=True)),
-         (fuzz.UWRatio, partial(utils.full_process, force_ascii=False)),
-         (fuzz.UQRatio, partial(utils.full_process, force_ascii=False))]
+        [
+            (fuzz.WRatio, partial(utils.full_process, force_ascii=True)),
+            (fuzz.QRatio, partial(utils.full_process, force_ascii=True)),
+            (fuzz.UWRatio, partial(utils.full_process, force_ascii=False)),
+            (fuzz.UQRatio, partial(utils.full_process, force_ascii=False)),
+        ]
     )
 
     return splist
 
 
-@pytest.mark.parametrize('scorer,processor',
-                         scorers_processors())
+@pytest.mark.parametrize("scorer,processor", scorers_processors())
 @given(data=st.data())
 @settings(max_examples=20, deadline=5000)
 def test_identical_strings_extracted(scorer, processor, data):
@@ -77,7 +89,7 @@ def test_identical_strings_extracted(scorer, processor, data):
         st.lists(
             st.text(min_size=10, max_size=100, alphabet=HYPOTHESIS_ALPHABET),
             min_size=1,
-            max_size=10
+            max_size=10,
         )
     )
     # Draw a random integer for the index in that list
@@ -87,15 +99,17 @@ def test_identical_strings_extracted(scorer, processor, data):
     choice = strings[choiceidx]
 
     # Check process doesn't make our choice the empty string
-    assume(processor(choice) != '')
+    assume(processor(choice) != "")
 
     # Extract all perfect matches
-    result = process.extractBests(choice,
-                                  strings,
-                                  scorer=scorer,
-                                  processor=processor,
-                                  score_cutoff=100,
-                                  limit=None)
+    result = process.extractBests(
+        choice,
+        strings,
+        scorer=scorer,
+        processor=processor,
+        score_cutoff=100,
+        limit=None,
+    )
 
     # Check we get a result
     assert result != []
@@ -104,8 +118,7 @@ def test_identical_strings_extracted(scorer, processor, data):
     assert (choice, 100) in result
 
 
-@pytest.mark.parametrize('scorer,processor',
-                         full_scorers_processors())
+@pytest.mark.parametrize("scorer,processor", full_scorers_processors())
 @given(data=st.data())
 @settings(max_examples=20, deadline=5000)
 def test_only_identical_strings_extracted(scorer, processor, data):
@@ -125,7 +138,8 @@ def test_only_identical_strings_extracted(scorer, processor, data):
         st.lists(
             st.text(min_size=10, max_size=100, alphabet=HYPOTHESIS_ALPHABET),
             min_size=1,
-            max_size=10)
+            max_size=10,
+        )
     )
     # Draw a random integer for the index in that list
     choiceidx = data.draw(st.integers(min_value=0, max_value=(len(strings) - 1)))
@@ -134,15 +148,17 @@ def test_only_identical_strings_extracted(scorer, processor, data):
     choice = strings[choiceidx]
 
     # Check process doesn't make our choice the empty string
-    assume(processor(choice) != '')
+    assume(processor(choice) != "")
 
     # Extract all perfect matches
-    result = process.extractBests(choice,
-                                  strings,
-                                  scorer=scorer,
-                                  processor=processor,
-                                  score_cutoff=100,
-                                  limit=None)
+    result = process.extractBests(
+        choice,
+        strings,
+        scorer=scorer,
+        processor=processor,
+        score_cutoff=100,
+        limit=None,
+    )
 
     # Check we get a result
     assert result != []

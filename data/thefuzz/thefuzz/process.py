@@ -15,7 +15,9 @@ default_scorer = fuzz.WRatio
 default_processor = utils.full_process
 
 
-def extractWithoutOrder(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0):
+def extractWithoutOrder(
+    query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0
+):
     """Select the best match in a list or dictionary of choices.
 
     Find best matches in a list or dictionary of choices, return a
@@ -61,6 +63,7 @@ def extractWithoutOrder(query, choices, processor=default_processor, scorer=defa
 
         ('train', 22, 'bard'), ('man', 0, 'dog')
     """
+
     # Catch generators without lengths
     def no_process(x):
         return x
@@ -80,25 +83,41 @@ def extractWithoutOrder(query, choices, processor=default_processor, scorer=defa
     processed_query = processor(query)
 
     if len(processed_query) == 0:
-        _logger.warning("Applied processor reduces input query to empty string, "
-                        "all comparisons will have score 0. "
-                        f"[Query: \'{query}\']")
+        _logger.warning(
+            "Applied processor reduces input query to empty string, "
+            "all comparisons will have score 0. "
+            f"[Query: '{query}']"
+        )
 
     # Don't run full_process twice
-    if scorer in [fuzz.WRatio, fuzz.QRatio,
-                  fuzz.token_set_ratio, fuzz.token_sort_ratio,
-                  fuzz.partial_token_set_ratio, fuzz.partial_token_sort_ratio,
-                  fuzz.UWRatio, fuzz.UQRatio] \
-            and processor == utils.full_process:
+    if (
+        scorer
+        in [
+            fuzz.WRatio,
+            fuzz.QRatio,
+            fuzz.token_set_ratio,
+            fuzz.token_sort_ratio,
+            fuzz.partial_token_set_ratio,
+            fuzz.partial_token_sort_ratio,
+            fuzz.UWRatio,
+            fuzz.UQRatio,
+        ]
+        and processor == utils.full_process
+    ):
         processor = no_process
 
     # Only process the query once instead of for every choice
     if scorer in [fuzz.UWRatio, fuzz.UQRatio]:
         pre_processor = partial(utils.full_process, force_ascii=False)
         scorer = partial(scorer, full_process=False)
-    elif scorer in [fuzz.WRatio, fuzz.QRatio,
-                    fuzz.token_set_ratio, fuzz.token_sort_ratio,
-                    fuzz.partial_token_set_ratio, fuzz.partial_token_sort_ratio]:
+    elif scorer in [
+        fuzz.WRatio,
+        fuzz.QRatio,
+        fuzz.token_set_ratio,
+        fuzz.token_sort_ratio,
+        fuzz.partial_token_set_ratio,
+        fuzz.partial_token_sort_ratio,
+    ]:
         pre_processor = partial(utils.full_process, force_ascii=True)
         scorer = partial(scorer, full_process=False)
     else:
@@ -121,7 +140,9 @@ def extractWithoutOrder(query, choices, processor=default_processor, scorer=defa
                 yield (choice, score)
 
 
-def extract(query, choices, processor=default_processor, scorer=default_scorer, limit=5):
+def extract(
+    query, choices, processor=default_processor, scorer=default_scorer, limit=5
+):
     """Select the best match in a list or dictionary of choices.
 
     Find best matches in a list or dictionary of choices, return a
@@ -167,11 +188,21 @@ def extract(query, choices, processor=default_processor, scorer=default_scorer, 
         [('train', 22, 'bard'), ('man', 0, 'dog')]
     """
     sl = extractWithoutOrder(query, choices, processor, scorer)
-    return heapq.nlargest(limit, sl, key=lambda i: i[1]) if limit is not None else \
-        sorted(sl, key=lambda i: i[1], reverse=True)
+    return (
+        heapq.nlargest(limit, sl, key=lambda i: i[1])
+        if limit is not None
+        else sorted(sl, key=lambda i: i[1], reverse=True)
+    )
 
 
-def extractBests(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0, limit=5):
+def extractBests(
+    query,
+    choices,
+    processor=default_processor,
+    scorer=default_scorer,
+    score_cutoff=0,
+    limit=5,
+):
     """Get a list of the best matches to a collection of choices.
 
     Convenience function for getting the choices with best scores.
@@ -192,11 +223,16 @@ def extractBests(query, choices, processor=default_processor, scorer=default_sco
     """
 
     best_list = extractWithoutOrder(query, choices, processor, scorer, score_cutoff)
-    return heapq.nlargest(limit, best_list, key=lambda i: i[1]) if limit is not None else \
-        sorted(best_list, key=lambda i: i[1], reverse=True)
+    return (
+        heapq.nlargest(limit, best_list, key=lambda i: i[1])
+        if limit is not None
+        else sorted(best_list, key=lambda i: i[1], reverse=True)
+    )
 
 
-def extractOne(query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0):
+def extractOne(
+    query, choices, processor=default_processor, scorer=default_scorer, score_cutoff=0
+):
     """Find the single best match above a score in a list of choices.
 
     This is a convenience method which returns the single best choice.
@@ -251,7 +287,7 @@ def dedupe(contains_dupes, threshold=70, scorer=fuzz.token_set_ratio):
             In: contains_dupes = ['Frodo Baggin', 'Frodo Baggins', 'F. Baggins', 'Samwise G.', 'Gandalf', 'Bilbo Baggins']
             In: fuzzy_dedupe(contains_dupes)
             Out: ['Frodo Baggins', 'Samwise G.', 'Bilbo Baggins', 'Gandalf']
-        """
+    """
 
     extractor = []
 
