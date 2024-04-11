@@ -225,6 +225,10 @@ google-search-results = "*"
 wolframalpha = "*"
 unstructured = "*"
 pillow-heif = "*"
+pypdf = "*"
+wikipedia = "*"
+rank-bm25 = "*"
+lark = "*"
 
 [dev-packages]
 

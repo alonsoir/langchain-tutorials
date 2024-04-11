@@ -15,13 +15,11 @@ def main():
     print("hello chatapi...")
     chat = ChatOpenAI()
     query = "What is the name of the most populous state in the USA?"
-    message = [
-        HumanMessage(content=query)
-    ]
+    message = [HumanMessage(content=query)]
     resp = chat(message)
     print(f"query is {query}")
     print(f"resp is {resp.content}")
-    querySystemMessage="Say the opposite of what the user says"
+    querySystemMessage = "Say the opposite of what the user says"
     queryHumanMessage = "I love programming."
     messages = [
         SystemMessage(content=querySystemMessage),
