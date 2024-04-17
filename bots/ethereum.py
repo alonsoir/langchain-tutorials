@@ -32,11 +32,13 @@ def get_external_ethereum_blockchain(address, etherscan_api_key):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     }
-    print(f" get_ethereum_blockchain. url: {url}")
+    print(f"---> get_external_ethereum_blockchain. url: {url}")
     try:
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            data = response.json()  # Directamente obtenemos la respuesta en formato dict
+            data = (
+                response.json()
+            )  # Directamente obtenemos la respuesta en formato dict
             message = data.get("message", "")
 
             if "NOTOK" in message:
@@ -52,6 +54,7 @@ def get_external_ethereum_blockchain(address, etherscan_api_key):
     except json.JSONDecodeError:
         print("Error al decodificar el JSON.")
         return None
+
 
 @timer
 def get_internal_ethereum_blockchain(address, etherscan_api_key):
@@ -59,11 +62,13 @@ def get_internal_ethereum_blockchain(address, etherscan_api_key):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     }
-    print(f" get_internal_ethereum_blockchain. url: {url}")
+    print(f"---> get_internal_ethereum_blockchain. url: {url}")
     try:
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            data = response.json()  # Directamente obtenemos la respuesta en formato dict
+            data = (
+                response.json()
+            )  # Directamente obtenemos la respuesta en formato dict
             message = data.get("message", "")
 
             if "NOTOK" in message:
@@ -79,6 +84,8 @@ def get_internal_ethereum_blockchain(address, etherscan_api_key):
     except json.JSONDecodeError:
         print("Error al decodificar el JSON.")
         return None
+
+
 @timer
 def get_ether_balance(address, api_token):
     # balancemulti or balance
@@ -143,13 +150,17 @@ def get_eth_transactions(address, api_key, start_block=14064182, end_block=None)
 
 def get_huobi_transactions(currency, eth_address, start_date, end_date):
     # Formatear las fechas
-    start_timestamp = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp())
-    end_timestamp = int(datetime.strptime(end_date, "%Y-%m-%d").timestamp())
+
+    start_datetime = datetime.strptime(start_date, "%Y-%m-%d")  # Convertir a datetime
+    start_timestamp = int(
+        start_datetime.timestamp()
+    )  # Convertir a timestamp (segundos)
+    end_timestamp = int(end_date.timestamp())  # Convertir a timestamp (segundos)
 
     # Construir la URL de la API
     url = "https://api.huobi.pro/v1/query/deposit-withdraw"
     print(
-        f"---> get_huobi_transactions currency:{currency} eth_address:{eth_address} start_date:{start_date} end_date:{end_date} url: {url}"
+        f"\n ---> get_huobi_transactions\n currency:{currency}\n  eth_address:{eth_address}\n  start_date:{start_date}\n  end_date:{end_date}\n  url: {url}"
     )
     # Parámetros de la solicitud
     params = {
@@ -164,34 +175,33 @@ def get_huobi_transactions(currency, eth_address, start_date, end_date):
     try:
         # Realizar la solicitud GET
         response = requests.get(url, params=params)
+        # another api crap, it could 200 but erroneus
+        if response.status_code == 200:
+            # Decode the response content from bytes to string
+            response_content = response.content.decode("utf-8")
 
-        # Decode the response content from bytes to string
-        response_content = response.content.decode("utf-8")
+            # Parse the JSON string
+            try:
+                response_data = json.loads(response_content)
+            except json.JSONDecodeError as e:
+                print(f"Error parsing JSON: {e}")
+                response_data = {}
 
-        # Parse the JSON string
-        try:
-            response_data = json.loads(response_content)
-        except json.JSONDecodeError as e:
-            print(f"Error parsing JSON: {e}")
-            response_data = {}
+            # Extract the status, err-code, and err-msg fields
+            status = response_data.get("status")
+            err_code = response_data.get("err-code")
+            err_msg = response_data.get("err-msg")
 
-        # Extract the status, err-code, and err-msg fields
-        status = response_data.get("status")
-        err_code = response_data.get("err-code")
-        err_msg = response_data.get("err-msg")
+            # Print the extracted fields
+            print(f"Status: {status}")
+            print(f"Error code: {err_code}")
+            print(f"Error message: {err_msg}")
 
-        # Print the extracted fields
-        print(f"Status: {status}")
-        print(f"Error code: {err_code}")
-        print(f"Error message: {err_msg}")
-
-        if response.status_code == 200 and status == "ok":
-            return response_data.get("data")
-        else:
-            print("Error en la solicitud:", err_msg)
-            return None
+            if response.status_code == 200 and status == "ok":
+                return response_data.get("data")
+            else:
+                return None
     except Exception as e:
-        print("Error al procesar la solicitud:", e)
         return None
 
 
@@ -203,7 +213,7 @@ def get_binance_transactions(currency_pair, eth_address, start_date, end_date):
     # Construir la URL de la API
     url = f"https://api.binance.com/api/v3/depositHistory.html?coin={currency_pair}&startTime={start_timestamp}&endTime={end_timestamp}&address={eth_address}"
     print(
-        f"---> get_binance_transactions. currency_pair:{currency_pair} eth_address:{eth_address} start_date: {start_date} end_date: {end_date} url: {url}"
+        f"\n ---> get_binance_transactions.\n  currency_pair:{currency_pair}\n  eth_address:{eth_address}\n  start_date: {start_date}\n  end_date: {end_date}\n  url: {url}"
     )
 
     try:
@@ -219,24 +229,34 @@ def get_binance_transactions(currency_pair, eth_address, start_date, end_date):
     except Exception as e:
         print("Error al procesar la solicitud:", e)
         return None
-    print("---> get_binance_transactions...")
+    print("\n ---> get_binance_transactions...")
 
 
 @timer
 def get_ethereum_scam_data(
     address, api_key, parquet_name="transactions_ethereum.parquet"
 ):
-    print(f"---> get_ethereum_scam_data address: {address} parquet_name:{parquet_name}")
+    print(f"\n ---> get_ethereum_scam_data.\n  address: {address}\n  parquet_name:{parquet_name}")
     global transactions
     balance = get_eth_balance(address, api_key)
     print(f"Scanning suspicious scamm address: address: {address} balance:{balance}")
     transactions = get_eth_transactions(address, api_key)
-    # Cargar datos JSON en un DataFrame de Pandas
-    df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
-    # Guardar DataFrame como archivo Parquet
-    df.to_parquet(parquet_name, index=True)
-    print(f"Data saved to {parquet_name}.")
-    print("---> get_ethereum_scam_data")
+    fromJsonToParquet(parquet_name, transactions)
+    print("\n ---> get_ethereum_scam_data")
+
+
+def fromJsonToParquet(parquet_name, transactions):
+    if transactions is not None:
+        # Cargar datos JSON en un DataFrame de Pandas
+        df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
+        # Guardar DataFrame como archivo Parquet
+        parquet_file = df.to_parquet(parquet_name, index=True)
+        if parquet_file is not None:
+            print(f"parquet saved to {parquet_name}.")
+        else:
+            print(f"{parquet_name} NOT BEEN SAVED!")
+    else:
+        print("transactions file is empty.")
 
 
 @timer
@@ -244,12 +264,12 @@ def get_okex_transactions(currency, eth_address, start_date, end_date):
 
     # Formatear las fechas
     start_timestamp = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp())
-    end_timestamp = int(datetime.strptime(end_date, "%Y-%m-%d").timestamp())
+    end_timestamp = int(end_date.timestamp())
 
     # Construir la URL de la API
     url = f"https://www.okex.com/api/account/v3/deposit/history?currency={currency}&start={start_timestamp}&end={end_timestamp}&address={eth_address}"
     print(
-        f"---> get_okex_transactions currency:{currency} eth_address: {eth_address} start_date: {start_date} end_date: {end_date} url: {url}"
+        f"\n ---> get_okex_transactions currency:{currency}\n eth_address: {eth_address}\n start_date: {start_date}\n end_date: {end_date}\n url: {url}"
     )
 
     try:
@@ -265,7 +285,7 @@ def get_okex_transactions(currency, eth_address, start_date, end_date):
     except Exception as e:
         print("Error al procesar la solicitud:", e)
         return None
-    print("---> get_okex_transactions")
+    print("\n ---> get_okex_transactions")
 
 
 @timer
@@ -273,12 +293,12 @@ def get_upbit_transactions(currency, eth_address, start_date, end_date):
 
     # Formatear las fechas
     start_timestamp = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp())
-    end_timestamp = int(datetime.strptime(end_date, "%Y-%m-%d").timestamp())
+    end_timestamp = int(end_date.timestamp())
 
     # Construir la URL de la API
     url = f"https://api.upbit.com/v1/deposits/ethereum?currency={currency}&access_key={eth_address}&range={start_timestamp}T00:00:00Z_{end_timestamp}T00:00:00Z"
     print(
-        f"---> get_upbit_transactions currency: {currency} eth_address: {eth_address} start_date: {start_date} end_date: {end_date} url: {url}"
+        f"\n ---> get_upbit_transactions\n  currency: {currency}\n  eth_address: {eth_address}\n  start_date: {start_date}\n  end_date: {end_date}\n  url: {url}"
     )
 
     try:
@@ -294,7 +314,7 @@ def get_upbit_transactions(currency, eth_address, start_date, end_date):
     except Exception as e:
         print("Error al procesar la solicitud:", e)
         return None
-    print("---> get_upbit_transactions")
+    print("\n ---> get_upbit_transactions")
 
 
 @timer
@@ -307,7 +327,7 @@ def get_coinone_transactions(currency, eth_address, start_date, end_date):
     # Construir la URL de la API
     url = f"https://api.coinone.co.kr/deposit/history/?format=json&currency={currency}&access_token={eth_address}&start={start_timestamp}&end={end_timestamp}"
     print(
-        f"---> get_coinone_transactions currency: {currency} eth_address:{eth_address} start_date: {start_date} url: {url}"
+        f"\n ---> get_coinone_transactions\n  currency: {currency}\n  eth_address:{eth_address}\n  start_date: {start_date}\n  url: {url}"
     )
 
     try:
@@ -324,7 +344,7 @@ def get_coinone_transactions(currency, eth_address, start_date, end_date):
         print("Error al procesar la solicitud:", e)
         return None
 
-    print("---> get_coinone_transactions")
+    print("\n ---> get_coinone_transactions")
 
 
 @timer
@@ -336,7 +356,7 @@ def get_korbit_transactions(currency_pair, eth_address, start_date, end_date):
 
     # Construir la URL de la API
     url = f"https://api.korbit.co.kr/v1/user/deposit/{currency_pair}?access_token={eth_address}&start={start_iso}&end={end_iso}"
-    print(f"---> get_korbit_transactions currency_pair:{currency_pair} url:{url}")
+    print(f"\n ---> get_korbit_transactions\n  currency_pair:{currency_pair}\n  url:{url}")
 
     try:
         # Realizar la solicitud GET
@@ -344,7 +364,7 @@ def get_korbit_transactions(currency_pair, eth_address, start_date, end_date):
         data = response.json()
 
         if response.status_code == 200:
-            print(f"---> get_korbit_transactions {response.status_code}")
+            print(f"\n ---> get_korbit_transactions {response.status_code}")
             return data
         else:
             print("Error en la solicitud:", data)
@@ -363,7 +383,7 @@ def get_bithumb_transactions(currency, eth_address, start_date, end_date):
 
     # Construir la URL de la API
     url = f"https://api.bithumb.com/public/transaction_history/{currency}/KRW?searchGb=0&offset=0&count=100&start={start_timestamp}&end={end_timestamp}&address={eth_address}"
-    print(f"---> get_bithumb_transactions url:{url}")
+    print(f"\n ---> get_bithumb_transactions\n  url:{url}")
 
     try:
         # Realizar la solicitud GET
@@ -392,7 +412,7 @@ def get_bitstamp_transactions(currency_pair, eth_address, start_date, end_date):
 
     # Construir la URL de la API
     url = f"https://www.bitstamp.net/api/v2/user_transactions/{currency_pair}/?time=hour&start={start_timestamp}&end={end_timestamp}&address={eth_address}"
-    print(f"---> get_bitstamp_transactions url:{url}")
+    print(f"\n ---> get_bitstamp_transactions\n  url:{url}")
 
     try:
         # Realizar la solicitud GET
@@ -400,11 +420,11 @@ def get_bitstamp_transactions(currency_pair, eth_address, start_date, end_date):
         data = response.json()
 
         if response.status_code == 200:
-            print(f"---> get_bitstamp_transactions {response.status_code}")
+            print(f"\n ---> get_bitstamp_transactions {response.status_code}")
 
             return data
         else:
-            print(f"---> get_bitstamp_transactions {response.status_code}")
+            print(f"-\n --> get_bitstamp_transactions {response.status_code}")
             return None
     except Exception as e:
         print("Error al procesar la solicitud:", e)
@@ -420,7 +440,7 @@ def get_coinbase_pro_transactions(product_id, eth_address, start_date, end_date)
 
     # Construir la URL de la API
     url = f"https://api.pro.coinbase.com/products/{product_id}/trades?start={start_iso}&end={end_iso}&eth_address={eth_address}"
-    print(f"---> get_coinbase_pro_transactions url:{url}")
+    print(f"\n ---> get_coinbase_pro_transactions\n  url:{url}\n  {eth_address}\n{start_date}\n {end_date} ")
 
     try:
         # Realizar la solicitud GET
@@ -428,10 +448,10 @@ def get_coinbase_pro_transactions(product_id, eth_address, start_date, end_date)
         data = response.json()
 
         if response.status_code == 200:
-            print(f"---> get_coinbase_pro_transactions {response.status_code}")
+            print(f"\n ---> get_coinbase_pro_transactions {response.status_code}")
             return data
         else:
-            print(f"---> get_coinbase_pro_transactions {response.status_code}")
+            print(f"\n ---> get_coinbase_pro_transactions {response.status_code}")
             return None
 
     except Exception as e:
@@ -448,7 +468,7 @@ def get_kraken_transactions(pair, eth_address, start_date, end_date):
 
     # Construir la URL de la API
     url = f"https://api.kraken.com/0/public/Trades?pair={pair}&since={start_iso}&eth_address={eth_address}"
-    print(f"---> get_kraken_transactions url:{url}")
+    print(f"\n ---> get_kraken_transactions\n  url:{url}")
 
     try:
         # Realizar la solicitud GET
@@ -456,12 +476,12 @@ def get_kraken_transactions(pair, eth_address, start_date, end_date):
         data = response.json()
 
         if response.status_code == 200 and data["error"] == []:
-            print(f"---> get_kraken_transactions url:{url} {response.status_code} ")
+            print(f"\n ---> get_kraken_transactions\n  url:{url} {response.status_code} ")
 
             return data["result"]
         else:
             print(
-                f"---> get_kraken_transactions url:{url} {response.status_code} {data['error']}"
+                f"\n ---> get_kraken_transactions\n  url:{url} {response.status_code}\n  {data['error']}"
             )
             return None
     except Exception as e:
@@ -478,7 +498,7 @@ def get_gemini_transactions(symbol, eth_address, start_date, end_date):
 
     # Construir la URL de la API
     url = f"https://api.gemini.com/v1/mytrades/{symbol}?limit_trades=1000&timestamp={start_timestamp}&address={eth_address}"
-    print(f"---> get_gemini_transactions url: {url}")
+    print(f"\n ---> get_gemini_transactions\n  url: {url}")
 
     try:
         # Realizar la solicitud GET
@@ -486,11 +506,11 @@ def get_gemini_transactions(symbol, eth_address, start_date, end_date):
         data = response.json()
 
         if response.status_code == 200:
-            print(f"---> get_gemini_transactions url: {url} {response.status_code}")
+            print(f"\n ---> get_gemini_transactions\n  url: {url}\n  {response.status_code}")
 
             return data
         else:
-            print(f"---> get_gemini_transactions url: {url} {response.status_code}")
+            print(f"\n ---> get_gemini_transactions\n  url: {url}\n  {response.status_code}")
             return None
     except Exception as e:
         print("Error al procesar la solicitud:", e)
@@ -506,7 +526,7 @@ def get_kucoin_transactions(symbol, eth_address, start_date, end_date):
 
     # Construir la URL de la API
     url = f"https://api.kucoin.com/api/v1/accounts/{symbol}/ledger?startAt={start_timestamp}&endAt={end_timestamp}&address={eth_address}"
-    print(f"---> get_kucoin_transactions url:{url}")
+    print(f"\n ---> get_kucoin_transactions url:{url}")
 
     try:
         # Realizar la solicitud GET
@@ -514,11 +534,11 @@ def get_kucoin_transactions(symbol, eth_address, start_date, end_date):
         data = response.json()
 
         if response.status_code == 200:
-            print(f"---> get_kucoin_transactions url:{url} {response.status_code}")
+            print(f"\n ---> get_kucoin_transactions\n  url:{url}\n  {response.status_code}")
 
             return data
         else:
-            print(f"---> get_kucoin_transactions url:{url} {response.status_code}")
+            print(f"\n ---> get_kucoin_transactions\n  url:{url}\n  {response.status_code}")
             return None
     except Exception as e:
         print("Error al procesar la solicitud:", e)
@@ -543,7 +563,8 @@ def kukoin_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones en get_kucoin_transactions")
+        print("No se encontraron transacciones en kucoin")
+        print(f"{symbol}\n  {eth_address}\n  {start_date}\n  {end_date}\n ")
 
 
 @timer
@@ -554,7 +575,8 @@ def gemini_transactions():
     eth_address = address_scammer
     transactions = get_gemini_transactions(symbol, eth_address, start_date, end_date)
     if transactions:
-        print("Transacciones encontradas get_gemini_transactions")
+        print("Transacciones encontradas get_gemini_transactions. \n ")
+        print((f"{symbol}\n {eth_address} {start_date}\n {end_date}\n "))
         # Cargar datos JSON en un DataFrame de Pandas
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
         parquet_name = (
@@ -562,9 +584,10 @@ def gemini_transactions():
         )
         # Guardar DataFrame como archivo Parquet
         df.to_parquet(parquet_name, index=True)
-        print(f"Data saved to {parquet_name}.")
+        print(f"\n Data saved to {parquet_name}.\n ")
     else:
         print("No se encontraron transacciones get_gemini_transactions")
+        print(f"{symbol}\n  {eth_address}\n  {start_date}\n  {end_date}")
 
 
 @timer
@@ -574,7 +597,7 @@ def kraken_transactions():
     pair = "XETHZUSD"
     eth_address = address_scammer
     transactions = get_kraken_transactions(pair, eth_address, start_date, end_date)
-    if transactions:
+    if transactions is not None:
         print("Transacciones encontradas get_kraken_transactions")
         transactions_json = json.dumps(transactions)
         # Cargar datos JSON en un DataFrame de Pandas
@@ -594,13 +617,13 @@ def kraken_transactions():
                 return x
 
         # 2. Apply element-wise transformation using vectorized function
-        df["XETHZUSD"] = df["XETHZUSD"].apply(handle_list)
+        df[pair] = df[pair].apply(handle_list)
 
         # 3. Convert to float (assuming the first element is the desired float)
-        df["XETHZUSD"] = df["XETHZUSD"].astype(float)
+        df[pair] = df[pair].astype(float)
 
         # Verificar tipo de datos
-        print(df["XETHZUSD"].dtype)
+        print(df[pair].dtype)
         parquet_name = (
             f"kraken_transacctions_{pair}_{eth_address}_{start_date}_{end_date}.parquet"
         )
@@ -608,7 +631,8 @@ def kraken_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones get_kraken_transactions")
+        print("No se encontraron transacciones kraken")
+        print(f"{pair} {eth_address} {start_date} {end_date}")
 
 
 @timer
@@ -620,7 +644,7 @@ def coinbase_pro_transactions():
     transactions = get_coinbase_pro_transactions(
         product_id, eth_address, start_date, end_date
     )
-    if transactions:
+    if transactions is not None:
         print("Transacciones encontradas coinbase_pro")
         # Convertir la lista de transacciones a un objeto JSON
         transactions_json = json.dumps(transactions)
@@ -633,7 +657,8 @@ def coinbase_pro_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones. get_coinbase_pro_transactions")
+        print("No se encontraron transacciones. coinbase_pro")
+        print(f"{product_id} {eth_address} {start_date} {end_date}")
 
 
 @timer
@@ -645,7 +670,7 @@ def bitstamp_transactions():
     transactions = get_bitstamp_transactions(
         currency_pair, eth_address, start_date, end_date
     )
-    if transactions:
+    if transactions is not None:
         print("Transacciones encontradas:", transactions)
         # Cargar datos JSON en un DataFrame de Pandas
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
@@ -654,7 +679,8 @@ def bitstamp_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones. get_bitstamp_transactions")
+        print("No se encontraron transacciones. bitstamp")
+        print(f"{currency_pair} {eth_address} {start_date} {end_date}")
 
 
 @timer
@@ -664,7 +690,7 @@ def bithump_transactions():
     currency = "ETH"
     eth_address = address_scammer
     transactions = get_bithumb_transactions(currency, eth_address, start_date, end_date)
-    if transactions:
+    if transactions is not None:
         print("Transacciones encontradas: get_bithumb_transactions")
         # Cargar datos JSON en un DataFrame de Pandas
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
@@ -673,7 +699,8 @@ def bithump_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones. get_bithumb_transactions")
+        print("No se encontraron transacciones. bithumb")
+        print(f"{currency} {eth_address} {start_date} {end_date}")
 
 
 @timer
@@ -685,7 +712,7 @@ def korbit_transactions():
     transactions = get_korbit_transactions(
         currency_pair, eth_address, start_date, end_date
     )
-    if transactions:
+    if transactions is not None:
         print("Transacciones encontradas: get_korbit_transactions")
         # Cargar datos JSON en un DataFrame de Pandas
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
@@ -694,7 +721,8 @@ def korbit_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones. get_korbit_transactions")
+        print("No se encontraron transacciones. korbit.")
+        print(f"{currency_pair} {eth_address} {start_date} {end_date}")
 
 
 @timer
@@ -704,7 +732,7 @@ def coinone_transactions():
     currency = "eth"
     eth_address = address_scammer
     transactions = get_coinone_transactions(currency, eth_address, start_date, end_date)
-    if transactions:
+    if transactions is not None:
         print("Transacciones encontradas: get_coinone_transactions")
         # Cargar datos JSON en un DataFrame de Pandas
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
@@ -713,17 +741,16 @@ def coinone_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones. get_coinone_transactions")
+        print("No se encontraron transacciones. coinone")
+        print(f"{currency} {eth_address} {start_date} {end_date}")
 
 
 @timer
-def upbit_transactions():
-    global currency, eth_address, transactions, df, parquet_name
+def upbit_transactions(currency, address_scammer, start_date, end_date):
     # Ejemplo de uso
-    currency = "ETH"
-    eth_address = address_scammer
-    transactions = get_upbit_transactions(currency, eth_address, start_date, end_date)
-    if transactions:
+    print(f"upbit_transactions\n currency: {currency}\n address: {address_scammer}\n start_date:{start_date}\n end_date:{end_date}\n")
+    transactions = get_upbit_transactions(currency, address_scammer, start_date, end_date)
+    if transactions is not None:
         print("Transacciones encontradas: get_upbit_transactions")
         # Cargar datos JSON en un DataFrame de Pandas
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
@@ -732,17 +759,14 @@ def upbit_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones. get_upbit_transactions")
+        print("No se encontraron transacciones. upbit")
+        print(f"{currency} {address_scammer} {start_date} {end_date}")
 
 
 @timer
-def okex_transactions():
-    global currency, eth_address, transactions, df, parquet_name
-    # Ejemplo de uso
-    currency = "eth"
-    eth_address = address_scammer
+def okex_transactions(currency, eth_address, start_date, end_date):
     transactions = get_okex_transactions(currency, eth_address, start_date, end_date)
-    if transactions:
+    if transactions is not None:
         print("Transacciones encontradas: get_okex_transactions")
         # Cargar datos JSON en un DataFrame de Pandas
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
@@ -751,30 +775,33 @@ def okex_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones. get_okex_transactions")
+        print("No se encontraron transacciones. okex")
+        print(f"{currency} {eth_address} {start_date} {end_date}")
 
 
 @timer
-def huobi_transactions():
-    global currency, eth_address, transactions, df, parquet_name
+def huobi_transactions(currency, eth_address, start_date, end_date):
     # Ejemplo de uso
-    currency = "eth"
-    eth_address = address_scammer
-    transactions = get_huobi_transactions(currency, eth_address, start_date, end_date)
-    if transactions:
-        print("Transacciones encontradas: get_huobi_transactions")
+    print(f"huobi_transactions {currency} {eth_address}")
+    transactions = get_huobi_transactions(currency, eth_address,start_date,end_date)
+    if transactions is not None:
+        print(f"Transacciones encontradas en huobi. {currency} {eth_address} {start_date} {end_date}")
         # Cargar datos JSON en un DataFrame de Pandas
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
         parquet_name = f"huobi_transacctions_{currency}_{eth_address}_{start_date}_{end_date}.parquet"
         # Guardar DataFrame como archivo Parquet
-        df.to_parquet(parquet_name, index=True)
-        print(f"Data saved to {parquet_name}.")
+        parquetFile = df.to_parquet(parquet_name, index=True)
+        if parquetFile is not None:
+            print(f"Data saved to {parquet_name}.")
+        else:
+            print(f"No se ha podido guardar el fichero parquet {parquetFile}")
     else:
-        print("No se encontraron transacciones. get_huobi_transactions")
+        print("No se encontraron transacciones. huobi.")
+        print(f"{currency} , {eth_address} {start_date} {end_date}")
 
 
 @timer
-def binance_transactions():
+def binance_transactions(address_scammer):
     global currency_pair, eth_address, start_date, end_date, transactions, df, parquet_name
     # Ejemplo de uso
     currency_pair = "ETH"
@@ -793,7 +820,8 @@ def binance_transactions():
         df.to_parquet(parquet_name, index=True)
         print(f"Data saved to {parquet_name}.")
     else:
-        print("No se encontraron transacciones. get_binance_transactions")
+        print("No se encontraron transacciones. binance")
+        print(f"{currency_pair} {eth_address} {start_date} {end_date}")
 
 
 def wrapping_html_content(html):
@@ -861,47 +889,60 @@ def wrapping_html_content(html):
     for key, value in extracted_info.items():
         print(f"{key}: {value}")
 
+
 @timer
-def get_full_address_from_etherscan(my_address, etherscan_api_key):
+def get_full_data_from_etherscan(my_address, etherscan_api_key):
     global transactions, data
-    json_external_etherscan = get_external_ethereum_blockchain(my_address, etherscan_api_key)
     from_external_addresses = set()
     to_external_addresses = set()
     # Crear un conjunto para guardar direcciones únicas
     direcciones_internal = set()
-    # Asegurate que la respuesta contiene las transacciones
-    if json_external_etherscan['status'] == '1' and 'result' in json_external_etherscan:
-        transactions = json_external_etherscan['result']
 
+    json_external_etherscan = get_external_ethereum_blockchain(
+        my_address, etherscan_api_key
+    )
+    # Asegurate que la respuesta contiene las transacciones
+    if json_external_etherscan["status"] == "1" and "result" in json_external_etherscan:
+        transactions = json_external_etherscan["result"]
+        parquet_name = f"transactions_external_{my_address}.parquet"
+        fromJsonToParquet(parquet_name, transactions)
         # Procesa cada transacción para extraer las direcciones 'from' y 'to'
         for tx in transactions:
-            from_external_addresses.add(tx['from'])
-            to_external_addresses.add(tx['to'])
+            from_external_addresses.add(tx["from"])
+            to_external_addresses.add(tx["to"])
 
         # En este punto, `from_addresses` y `to_addresses` contienen todas las direcciones únicas que buscamos
         print(f"From addresses: {from_external_addresses}")
         print(f"To addresses: {to_external_addresses}")
 
         # Si necesitas trabajar con estos como listas en vez de conjuntos
-        from_address_list = list(from_external_addresses)
-        to_address_list = list(to_external_addresses)
+        # from_address_list = list(from_external_addresses)
+        # to_address_list = list(to_external_addresses)
 
     else:
-        print("No se encontraron transacciones o hubo un error en la petición.")
-    print(f"{json_external_etherscan}")
-    json_internal_etherscan = get_internal_ethereum_blockchain(my_address, etherscan_api_key)
-    if json_internal_etherscan['status'] == '1' and 'result' in json_internal_etherscan:
-        data = json_internal_etherscan.json()
+        print("No se encontraron transacciones asociadas a {my_address}")
 
+    print(f"{json_external_etherscan}")
+    json_internal_etherscan = get_internal_ethereum_blockchain(
+        my_address, etherscan_api_key
+    )
+    if json_internal_etherscan["status"] == "1" and "result" in json_internal_etherscan:
+        data = json_internal_etherscan.json()
+        transactions = data["result"]
+        parquet_name = f"transactions_internal_{my_address}.parquet"
+        fromJsonToParquet(parquet_name, transactions)
         # Recorrer las transacciones y añadir las direcciones "from" y "to"
-        for tx in data["result"]:
+        for tx in transactions:
             direcciones_internal.add(tx["from"])
             direcciones_internal.add(tx["to"])
     else:
-        print("No se encontraron transacciones o hubo un error en la petición.")
+        print("No se encontraron transacciones asociadas a {my_address}")
     print(f"{json_internal_etherscan}")
-    total_addresses = from_external_addresses | to_external_addresses | direcciones_internal
+    total_addresses = (
+        from_external_addresses | to_external_addresses | direcciones_internal
+    )
     return total_addresses
+
 
 if __name__ == "__main__":
     load_dotenv()
@@ -909,22 +950,29 @@ if __name__ == "__main__":
     my_address = "0x46C218cb1C09697840A6eAe78A54821cFdD9fD04"
     address_scammer = "0xaca6c427e543240a74f9438cd3e8769b144c4c55"
     etherscan_api_key = os.getenv("ETHERSCAN_API_KEY")
+    currencies = ["eth", "btc", "usdt"]
+    start_date = "2021-01-01"
+    end_date = datetime.now()  # Fecha y hora actuales
 
-    full_set_adress = get_full_address_from_etherscan(my_address, etherscan_api_key)
-    print(f"full_set_adress: {full_set_adress}")
+    # full_set_adress = get_full_data_from_etherscan(address_scammer, etherscan_api_key)
+    # print(f"full_set_adress: {full_set_adress}")
     # html_content = get_initial_address()
     # wrapping_html_content(html_content)
 
     # retrieve data from etherscan and saved to parquet file
-    # get_ethereum_scam_data(address_scammer, etherscan_api_key)
+    get_ethereum_scam_data(address_scammer, etherscan_api_key)
 
-    # binance_transactions()
+    # binance_transactions(address_scammer)
+    # def huobi_transactions(_currency="eth", eth_address=address_scammer, start_date, end_date):
 
-    # huobi_transactions()
+    for currency in currencies:
+        huobi_transactions(currency, address_scammer, start_date, end_date)
 
-    # okex_transactions()
+    for currency in currencies:
+        okex_transactions(currency, address_scammer, start_date, end_date)
 
-    # upbit_transactions()
+    for currency in currencies:
+        upbit_transactions(currency, address_scammer, start_date, end_date)
 
     # coinone_transactions()
 

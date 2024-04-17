@@ -220,7 +220,6 @@ pikepdf = "==8.10.1"
 pillow = "==10.1.0"
 pinecone-client = "*"
 python-dotenv = "*"
-black = "*"
 google-search-results = "*"
 wolframalpha = "*"
 unstructured = "*"
@@ -230,6 +229,7 @@ wikipedia = "*"
 rank-bm25 = "*"
 lark = "*"
 requests = "*"
+black = {extras = ["jupyter"], version = "*"}
 
 [dev-packages]
 
