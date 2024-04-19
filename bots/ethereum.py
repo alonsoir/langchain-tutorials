@@ -236,7 +236,9 @@ def get_binance_transactions(currency_pair, eth_address, start_date, end_date):
 def get_ethereum_scam_data(
     address, api_key, parquet_name="transactions_ethereum.parquet"
 ):
-    print(f"\n ---> get_ethereum_scam_data.\n  address: {address}\n  parquet_name:{parquet_name}")
+    print(
+        f"\n ---> get_ethereum_scam_data.\n  address: {address}\n  parquet_name:{parquet_name}"
+    )
     global transactions
     balance = get_eth_balance(address, api_key)
     print(f"Scanning suspicious scamm address: address: {address} balance:{balance}")
@@ -356,7 +358,9 @@ def get_korbit_transactions(currency_pair, eth_address, start_date, end_date):
 
     # Construir la URL de la API
     url = f"https://api.korbit.co.kr/v1/user/deposit/{currency_pair}?access_token={eth_address}&start={start_iso}&end={end_iso}"
-    print(f"\n ---> get_korbit_transactions\n  currency_pair:{currency_pair}\n  url:{url}")
+    print(
+        f"\n ---> get_korbit_transactions\n  currency_pair:{currency_pair}\n  url:{url}"
+    )
 
     try:
         # Realizar la solicitud GET
@@ -440,7 +444,9 @@ def get_coinbase_pro_transactions(product_id, eth_address, start_date, end_date)
 
     # Construir la URL de la API
     url = f"https://api.pro.coinbase.com/products/{product_id}/trades?start={start_iso}&end={end_iso}&eth_address={eth_address}"
-    print(f"\n ---> get_coinbase_pro_transactions\n  url:{url}\n  {eth_address}\n{start_date}\n {end_date} ")
+    print(
+        f"\n ---> get_coinbase_pro_transactions\n  url:{url}\n  {eth_address}\n{start_date}\n {end_date} "
+    )
 
     try:
         # Realizar la solicitud GET
@@ -476,7 +482,9 @@ def get_kraken_transactions(pair, eth_address, start_date, end_date):
         data = response.json()
 
         if response.status_code == 200 and data["error"] == []:
-            print(f"\n ---> get_kraken_transactions\n  url:{url} {response.status_code} ")
+            print(
+                f"\n ---> get_kraken_transactions\n  url:{url} {response.status_code} "
+            )
 
             return data["result"]
         else:
@@ -506,11 +514,15 @@ def get_gemini_transactions(symbol, eth_address, start_date, end_date):
         data = response.json()
 
         if response.status_code == 200:
-            print(f"\n ---> get_gemini_transactions\n  url: {url}\n  {response.status_code}")
+            print(
+                f"\n ---> get_gemini_transactions\n  url: {url}\n  {response.status_code}"
+            )
 
             return data
         else:
-            print(f"\n ---> get_gemini_transactions\n  url: {url}\n  {response.status_code}")
+            print(
+                f"\n ---> get_gemini_transactions\n  url: {url}\n  {response.status_code}"
+            )
             return None
     except Exception as e:
         print("Error al procesar la solicitud:", e)
@@ -534,11 +546,15 @@ def get_kucoin_transactions(symbol, eth_address, start_date, end_date):
         data = response.json()
 
         if response.status_code == 200:
-            print(f"\n ---> get_kucoin_transactions\n  url:{url}\n  {response.status_code}")
+            print(
+                f"\n ---> get_kucoin_transactions\n  url:{url}\n  {response.status_code}"
+            )
 
             return data
         else:
-            print(f"\n ---> get_kucoin_transactions\n  url:{url}\n  {response.status_code}")
+            print(
+                f"\n ---> get_kucoin_transactions\n  url:{url}\n  {response.status_code}"
+            )
             return None
     except Exception as e:
         print("Error al procesar la solicitud:", e)
@@ -748,8 +764,12 @@ def coinone_transactions():
 @timer
 def upbit_transactions(currency, address_scammer, start_date, end_date):
     # Ejemplo de uso
-    print(f"upbit_transactions\n currency: {currency}\n address: {address_scammer}\n start_date:{start_date}\n end_date:{end_date}\n")
-    transactions = get_upbit_transactions(currency, address_scammer, start_date, end_date)
+    print(
+        f"upbit_transactions\n currency: {currency}\n address: {address_scammer}\n start_date:{start_date}\n end_date:{end_date}\n"
+    )
+    transactions = get_upbit_transactions(
+        currency, address_scammer, start_date, end_date
+    )
     if transactions is not None:
         print("Transacciones encontradas: get_upbit_transactions")
         # Cargar datos JSON en un DataFrame de Pandas
@@ -783,9 +803,11 @@ def okex_transactions(currency, eth_address, start_date, end_date):
 def huobi_transactions(currency, eth_address, start_date, end_date):
     # Ejemplo de uso
     print(f"huobi_transactions {currency} {eth_address}")
-    transactions = get_huobi_transactions(currency, eth_address,start_date,end_date)
+    transactions = get_huobi_transactions(currency, eth_address, start_date, end_date)
     if transactions is not None:
-        print(f"Transacciones encontradas en huobi. {currency} {eth_address} {start_date} {end_date}")
+        print(
+            f"Transacciones encontradas en huobi. {currency} {eth_address} {start_date} {end_date}"
+        )
         # Cargar datos JSON en un DataFrame de Pandas
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
         parquet_name = f"huobi_transacctions_{currency}_{eth_address}_{start_date}_{end_date}.parquet"
