@@ -8,6 +8,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+torchaudio = "^2.2.2"
+sounddevice = "^0.4.6"
 
 
 [build-system]

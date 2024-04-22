@@ -236,6 +236,7 @@ markdownify = "*"
 spacy = "*"
 youtube-transcript-api = "*"
 pytube = "*"
+jiwer = "*"
 
 [dev-packages]
 
