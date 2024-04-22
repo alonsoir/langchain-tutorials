@@ -244,8 +244,8 @@ def main():
     # Crear un diccionario vacío
     # data = {}
     # Agregar secciones al diccionario
-    #section_name = None
-    #for ent in doc.ents:
+    # section_name = None
+    # for ent in doc.ents:
     #    print(f"ent is {ent}")
     #    section_name = ent.label_
     #    if section_name not in data:
@@ -253,15 +253,15 @@ def main():
     #    data[section_name].append(ent.text)
 
     # Agregar valores adicionales al diccionario de datos
-    #data['otra_sección'] = ['valor1', 'valor2', 'valor3']
+    # data['otra_sección'] = ['valor1', 'valor2', 'valor3']
 
     # Imprimir el diccionario resultante
-    #print(f"data is {data}")
+    # print(f"data is {data}")
 
-    #output = chain(data)
-    #print(f"output: {output['text']}")
+    # output = chain(data)
+    # print(f"output: {output['text']}")
 
-    #with get_openai_callback() as cb:
+    # with get_openai_callback() as cb:
     #    result = chain(output)
     #    print(f"Total Tokens: {cb.total_tokens}")
     #    print(f"Prompt Tokens: {cb.prompt_tokens}")
@@ -269,9 +269,11 @@ def main():
     #    print(f"Successful Requests: {cb.successful_requests}")
     #    print(f"Total Cost (USD): ${cb.total_cost}")
 
-    #print(f"text is {text}")
-    #print(f"result is :{result}")
+    # print(f"text is {text}")
+    # print(f"result is :{result}")
     print("Done!")
+
+
 if __name__ == "__main__":
     load_dotenv()
     main()

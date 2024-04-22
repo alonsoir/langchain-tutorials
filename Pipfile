@@ -144,7 +144,7 @@ kiwisolver = "==1.4.5"
 kubernetes = "==28.1.0"
 langchain = "==0.0.352"
 langchain-cli = "==0.0.9"
-langchain-community = "==0.0.6"
+langchain-community = "*"
 langchain-core = "==0.1.10"
 langchain-experimental = "==0.0.47"
 langchain-openai = "==0.0.2.post1"
@@ -234,6 +234,8 @@ python-magic-bin = "*"
 faiss-cpu = "*"
 markdownify = "*"
 spacy = "*"
+youtube-transcript-api = "*"
+pytube = "*"
 
 [dev-packages]
 
