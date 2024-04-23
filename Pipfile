@@ -237,6 +237,7 @@ spacy = "*"
 youtube-transcript-api = "*"
 pytube = "*"
 jiwer = "*"
+pyaudio = "*"
 
 [dev-packages]
 
