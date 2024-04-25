@@ -18,6 +18,8 @@ def google():
             "What are some of the pros and cons of Python as a programming language?"
         )
     )
+
+
 def main():
     print("hello agents. ")
     llm_openAI = OpenAI(temperature=0)
@@ -39,17 +41,13 @@ def main():
     ]
     tools = load_tools(tool_names)
     agent_openAI = initialize_agent(
-        tools,
-        llm_openAI,
-        agent="zero-shot-react-description",
-        verbose=True
+        tools, llm_openAI, agent="zero-shot-react-description", verbose=True
     )
     agent_openAI.run("What is LangChain?")
     agent_openAI.run("who is the ceo of pipe?")
     agent_openAI.run("What is Wolfram alpha?")
     agent_openAI.run("What is the asthenosphere?")
     agent_openAI.run("cual es la raiz cuadrada de 144?")
-
 
 
 if __name__ == "__main__":
