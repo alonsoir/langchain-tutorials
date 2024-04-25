@@ -238,6 +238,8 @@ youtube-transcript-api = "*"
 pytube = "*"
 jiwer = "*"
 pyaudio = "*"
+dspy = "*"
+dspy-ai = "*"
 
 [dev-packages]
 

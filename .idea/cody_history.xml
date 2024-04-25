@@ -57,9 +57,73 @@
                 <speaker value="ASSISTANT" />
                 <text value="El error que estás obteniendo se debe a que el modelo `sil-ai/wav2vec2-bloom-speech-spa` que estás intentando cargar no es compatible con la tarea de reconocimiento de voz (CTC) que estás tratando de realizar. Este modelo parece estar entrenado para una tarea diferente o con una arquitectura diferente.&#10;&#10;Para solucionar este problema, puedes intentar cargar un modelo diferente que esté específicamente entrenado para el reconocimiento de voz en español. Un modelo recomendado para esta tarea es `facebook/wav2vec2-base-spanish`, que es el mismo que usamos en el ejemplo anterior.&#10;&#10;Modifica la línea donde cargas el modelo y el tokenizador:&#10;&#10;```python&#10;model = Wav2Vec2ForCTC.from_pretrained(&quot;facebook/wav2vec2-base-spanish&quot;)&#10;processor = Wav2Vec2Processor.from_pretrained(&quot;facebook/wav2vec2-base-spanish&quot;)&#10;```&#10;&#10;Con este cambio, el código debería funcionar correctamente y no deberías recibir el error mencionado.&#10;&#10;Si aún tienes problemas, asegúrate de tener instalada la versión más reciente de la biblioteca `transformers` de Hugging Face. Puedes actualizarla con el siguiente comando:&#10;&#10;```&#10;pip install --upgrade transformers&#10;```&#10;&#10;Espero que esto resuelva el problema. Si sigues teniendo dificultades, no dudes en preguntar." />
               </message>
+              <message>
+                <speaker value="HUMAN" />
+                <text value="como puedo hacer datetime.now() a un string?" />
+              </message>
+              <message>
+                <speaker value="ASSISTANT" />
+                <text value="Hay varias formas de convertir un objeto datetime a string en Python:&#10;&#10;1. Utilizando el método `.strftime()`:&#10;&#10;```python&#10;from datetime import datetime&#10;&#10;now = datetime.now()&#10;&#10;string_now = now.strftime(&quot;%d/%m/%Y %H:%M:%S&quot;)&#10;print(string_now)&#10;```&#10;&#10;Esto imprimirá la fecha y hora actual en el formato día/mes/año hora:minutos:segundos (ej: &quot;31/12/2022 23:59:59&quot;)&#10;&#10;2. Utilizando `str()`:&#10;&#10;```python&#10;string_now = str(now)&#10;print(string_now) &#10;```&#10;&#10;Esto imprimirá la fecha y hora en formato ISO (ej: &quot;2022-12-31 23:59:59.999999&quot;)&#10;&#10;3. Utilizando f-strings:&#10;&#10;```python&#10;string_now = f&quot;{now:%d/%m/%Y %H:%M}&quot;&#10;print(string_now)&#10;```&#10;&#10;Esto permite especificar el formato deseado dentro de la f-string (ej: &quot;31/12/2022 23:59&quot;)&#10;&#10;4. Parseando a string:&#10;&#10;```python &#10;from datetime import datetime&#10;&#10;string_now = datetime.strptime(str(now), &quot;%Y-%m-%d %H:%M:%S.%f&quot;)&#10;print(string_now)&#10;```&#10;&#10;Esto parsea la fecha como string en el formato especificado (ej: &quot;2022-12-31 23:59:59&quot;)&#10;&#10;En resumen, las opciones más comunes son usar `.strftime()` para obtener el formato deseado o `str()` para obtener una representación ISO." />
+              </message>
+              <message>
+                <speaker value="HUMAN" />
+                <text value="now = datetime.now()&#10;string_now = datetime.strptime(str(now), &amp;quot;%Y-%m-%d %H:%M:%S.%f&amp;quot;)&#10;    parquet_name = &amp;quot;transactions_ethereum-&amp;quot; + string_now + &amp;quot;.parquet&amp;quot;" />
+              </message>
+              <message>
+                <speaker value="ASSISTANT" />
+                <text value="Aquí tienes un ejemplo de cómo generar un nombre para un archivo Parquet utilizando la fecha y hora actual:&#10;&#10;```python&#10;from datetime import datetime&#10;&#10;now = datetime.now()&#10;&#10;# Convertir ahora a string &#10;string_now = now.strftime(&quot;%Y-%m-%d-%H-%M-%S&quot;)&#10;&#10;# Generar nombre de archivo Parquet&#10;parquet_name = &quot;transactions_ethereum-&quot; + string_now + &quot;.parquet&quot;&#10;&#10;print(parquet_name)&#10;```&#10;&#10;Lo que hacemos es:&#10;&#10;1. Obtener la fecha/hora actual con `datetime.now()`&#10;&#10;2. Convertirla a string con `.strftime()` en el formato deseado (YYYY-MM-DD-hh-mm-ss)&#10;&#10;3. Concatenar ese string con el prefijo &quot;transactions_ethereum-&quot; y sufijo &quot;.parquet&quot; para formar el nombre del archivo.&#10;&#10;Al imprimir `parquet_name` obtendríamos algo como:&#10;&#10;```&#10;transactions_ethereum-2023-01-31-15-49-35.parquet&#10;```&#10;&#10;De esta manera el nombre del archivo contiene la marca de tiempo de cuando fue generado.&#10;&#10;También podrías usar otros formatos de fecha/hora en el `.strftime()`, pero este es un formato común que permite ordenar los archivos cronológicamente si tuvieras varios." />
+              </message>
+              <message>
+                <speaker value="HUMAN" />
+                <text value="int(datetime.strptime(end_date, &quot;%Y-%m-%d&quot;).timestamp() * 1000) no se puede convertir a timestamp debido a que end_date es datetime.now()" />
+              </message>
+              <message>
+                <speaker value="ASSISTANT" />
+              </message>
+              <message>
+                <speaker value="HUMAN" />
+                <text value="int(datetime.strptime(end_date, &amp;quot;%Y-%m-%d&amp;quot;).timestamp() * 1000) no se puede convertir a timestamp debido a que end_date es datetime.now()" />
+              </message>
+              <message>
+                <speaker value="ASSISTANT" />
+                <text value="Tienes razón, no podemos convertir directamente un objeto datetime a timestamp de esa manera. &#10;&#10;Lo que debemos hacer es:&#10;&#10;1. Convertir el objeto datetime a string con strftime&#10;&#10;2. Parsear ese string a datetime especificando el formato&#10;&#10;3. Convertir el datetime parseado a timestamp&#10;&#10;Por ejemplo:&#10;&#10;```python&#10;from datetime import datetime&#10;&#10;end_date = datetime.now()&#10;&#10;# 1. Convertir a string &#10;end_date_string = end_date.strftime(&quot;%Y-%m-%d&quot;)&#10;&#10;# 2. Parsear string a datetime&#10;end_date_datetime = datetime.strptime(end_date_string, &quot;%Y-%m-%d&quot;)&#10;&#10;# 3. Convertir a timestamp &#10;end_date_timestamp = end_date_datetime.timestamp()&#10;&#10;# Obtener timestamp en milisegundos&#10;end_date_ms_timestamp = int(end_date_timestamp * 1000)&#10;&#10;print(end_date_ms_timestamp)&#10;```&#10;&#10;Resumiendo los pasos:&#10;&#10;1. Convertimos el objeto datetime a string con strftime y el formato deseado&#10;&#10;2. Parseamos ese string de vuelta a un objeto datetime con strptime y el mismo formato&#10;&#10;3. Obtenemos el timestamp del objeto datetime parseado &#10;&#10;4. Multiplicamos por 1000 para pasar de segundos a milisegundos&#10;&#10;5. Convertimos a entero&#10;&#10;Así podremos obtener correctamente el timestamp en milisegundos a partir de un objeto datetime." />
+              </message>
             </list>
           </messages>
-          <updatedAt value="2024-04-23T11:31:59.009605" />
+          <updatedAt value="2024-04-23T12:43:34.428613" />
+        </chat>
+        <chat>
+          <accountId value="VXNlcjozMTY3NzI=" />
+          <internalId value="a3a3989d-e5df-4af9-aa9f-1b0af2698eb0" />
+          <llm>
+            <llm>
+              <model value="anthropic/claude-3-sonnet-20240229" />
+              <provider value="Anthropic" />
+              <title value="Claude 3 Sonnet" />
+            </llm>
+          </llm>
+        </chat>
+        <chat>
+          <accountId value="VXNlcjozMTY3NzI=" />
+          <internalId value="5091d93f-cdc9-4814-948b-27e236e028ef" />
+          <llm>
+            <llm>
+              <model value="anthropic/claude-3-sonnet-20240229" />
+              <provider value="Anthropic" />
+              <title value="Claude 3 Sonnet" />
+            </llm>
+          </llm>
+        </chat>
+        <chat>
+          <accountId value="VXNlcjozMTY3NzI=" />
+          <internalId value="1b1517e3-297a-4df0-858e-623d592ed29f" />
+          <llm>
+            <llm>
+              <model value="anthropic/claude-3-sonnet-20240229" />
+              <provider value="Anthropic" />
+              <title value="Claude 3 Sonnet" />
+            </llm>
+          </llm>
         </chat>
       </list>
     </chats>

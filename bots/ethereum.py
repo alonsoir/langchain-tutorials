@@ -142,7 +142,6 @@ def get_eth_transactions(address, api_key, start_block=14064182, end_block=None)
     response = requests.get(url)
     if response.status_code == 200:
         return response.content
-        # return response.json()["result"]
     else:
         print(f"Error: {response.json()['message']}")
         return None
@@ -208,10 +207,10 @@ def get_huobi_transactions(currency, eth_address, start_date, end_date):
 def get_binance_transactions(currency_pair, eth_address, start_date, end_date):
     # Formatear las fechas
     start_timestamp = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp() * 1000)
-    end_timestamp = int(datetime.strptime(end_date, "%Y-%m-%d").timestamp() * 1000)
+    # end_timestamp = int(datetime.strptime(end_date, "%Y-%m-%d").timestamp() * 1000)
 
     # Construir la URL de la API
-    url = f"https://api.binance.com/api/v3/depositHistory.html?coin={currency_pair}&startTime={start_timestamp}&endTime={end_timestamp}&address={eth_address}"
+    url = f"https://api.binance.com/api/v3/depositHistory.html?coin={currency_pair}&startTime={start_timestamp}&endTime=0&address={eth_address}"
     print(
         f"\n ---> get_binance_transactions.\n  currency_pair:{currency_pair}\n  eth_address:{eth_address}\n  start_date: {start_date}\n  end_date: {end_date}\n  url: {url}"
     )
@@ -233,18 +232,27 @@ def get_binance_transactions(currency_pair, eth_address, start_date, end_date):
 
 
 @timer
-def get_ethereum_scam_data(
-    address, api_key, parquet_name="transactions_ethereum.parquet"
-):
+def get_ethereum_scam_data(address, api_key, parquet_name=None):
     print(
         f"\n ---> get_ethereum_scam_data.\n  address: {address}\n  parquet_name:{parquet_name}"
     )
+    string_now = what_date_is_it()
+
+    # Generar nombre de archivo Parquet
+    parquet_name = "transactions_ethereum-" + string_now + ".parquet"
     global transactions
-    balance = get_eth_balance(address, api_key)
-    print(f"Scanning suspicious scamm address: address: {address} balance:{balance}")
     transactions = get_eth_transactions(address, api_key)
     fromJsonToParquet(parquet_name, transactions)
     print("\n ---> get_ethereum_scam_data")
+
+
+def what_date_is_it():
+    from datetime import datetime
+
+    now = datetime.now()
+    # Convertir ahora a string
+    string_now = now.strftime("%Y-%m-%d-%H-%M-%S")
+    return string_now
 
 
 def fromJsonToParquet(parquet_name, transactions):
@@ -253,10 +261,7 @@ def fromJsonToParquet(parquet_name, transactions):
         df = pd.read_json(io.BytesIO(transactions), encoding="utf-8")
         # Guardar DataFrame como archivo Parquet
         parquet_file = df.to_parquet(parquet_name, index=True)
-        if parquet_file is not None:
-            print(f"parquet saved to {parquet_name}.")
-        else:
-            print(f"{parquet_name} NOT BEEN SAVED!")
+        print(f"parquet saved to {parquet_name}.")
     else:
         print("transactions file is empty.")
 
@@ -562,7 +567,7 @@ def get_kucoin_transactions(symbol, eth_address, start_date, end_date):
 
 
 @timer
-def kukoin_transactions():
+def kukoin_transactions(currency, address_scammer, start_date, end_date):
     global symbol, eth_address, transactions, df, parquet_name
     # Ejemplo de uso
     symbol = "ETH"
@@ -823,13 +828,10 @@ def huobi_transactions(currency, eth_address, start_date, end_date):
 
 
 @timer
-def binance_transactions(address_scammer):
-    global currency_pair, eth_address, start_date, end_date, transactions, df, parquet_name
+def binance_transactions(currency, address_scammer, start_date, end_date):
     # Ejemplo de uso
-    currency_pair = "ETH"
+    currency_pair = currency
     eth_address = address_scammer
-    start_date = "2021-01-01"
-    end_date = "2024-04-01"
     transactions = get_binance_transactions(
         currency_pair, eth_address, start_date, end_date
     )
@@ -976,38 +978,23 @@ if __name__ == "__main__":
     start_date = "2021-01-01"
     end_date = datetime.now()  # Fecha y hora actuales
 
-    # full_set_adress = get_full_data_from_etherscan(address_scammer, etherscan_api_key)
-    # print(f"full_set_adress: {full_set_adress}")
-    # html_content = get_initial_address()
-    # wrapping_html_content(html_content)
-
     # retrieve data from etherscan and saved to parquet file
-    get_ethereum_scam_data(address_scammer, etherscan_api_key)
+    # get_ethereum_scam_data(address_scammer, etherscan_api_key)
 
-    # binance_transactions(address_scammer)
     # def huobi_transactions(_currency="eth", eth_address=address_scammer, start_date, end_date):
 
     for currency in currencies:
+        binance_transactions(currency, address_scammer, start_date, end_date)
         huobi_transactions(currency, address_scammer, start_date, end_date)
-
-    for currency in currencies:
         okex_transactions(currency, address_scammer, start_date, end_date)
-
-    for currency in currencies:
         upbit_transactions(currency, address_scammer, start_date, end_date)
+        coinone_transactions(currency, address_scammer, start_date, end_date)
+        korbit_transactions(currency, address_scammer, start_date, end_date)
+        bithump_transactions(currency, address_scammer, start_date, end_date)
+        bitstamp_transactions(currency, address_scammer, start_date, end_date)
+        coinbase_pro_transactions(currency, address_scammer, start_date, end_date)
+        kraken_transactions(currency, address_scammer, start_date, end_date)
+        gemini_transactions(currency, address_scammer, start_date, end_date)
+        kukoin_transactions(currency, address_scammer, start_date, end_date)
 
-    # coinone_transactions()
-
-    # korbit_transactions()
-
-    # bithump_transactions()
-
-    # bitstamp_transactions()
-
-    # coinbase_pro_transactions()
-
-    # kraken_transactions()
-
-    # gemini_transactions()
-
-    # kukoin_transactions()
+    print("Done")
