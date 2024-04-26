@@ -240,6 +240,10 @@ jiwer = "*"
 pyaudio = "*"
 dspy = "*"
 dspy-ai = "*"
+google-generativeai = "*"
+google-cloud-aiplatform = "*"
+numexpr = "*"
+chainlit = "*"
 
 [dev-packages]
 
